@@ -5,6 +5,13 @@
  */
 package ui;
 
+import database.DBConnection;
+
+import javax.swing.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author Steve Karanja
@@ -225,17 +232,57 @@ public class AdminLogin extends javax.swing.JFrame {
 
     private void btnSigninActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSigninActionPerformed
         // TODO add your handling code here:
-        ui.AdminDashboard adminDash = new ui.AdminDashboard();
-        adminDash.setVisible(true);
-        adminDash.pack();
-        adminDash.setLocationRelativeTo(null);
-        adminDash.setDefaultCloseOperation(adminDash.EXIT_ON_CLOSE);
-        this.dispose();
+        if (userName.getText().isEmpty() || password.getPassword().length == 0) {
+            JOptionPane.showMessageDialog(null, "Enter both Staff ID and Password!");
+            return;
+        }
+
+        String userID = userName.getText();
+        String pass = new String(password.getPassword());
+        String pswd = null;
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT password FROM users WHERE user_id=" + userID + " AND user_type=0 AND user_status=1;";
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                pswd = rs.getString(1);
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        if (!pass.equals(pswd)) {
+            JOptionPane.showMessageDialog(null, "Error! Check Login Credentials");
+            userName.setText("");
+            password.setText("");
+            return;
+        }else {
+            ui.AdminDashboard adminDash = new ui.AdminDashboard();
+            adminDash.setVisible(true);
+            adminDash.pack();
+            adminDash.setLocationRelativeTo(null);
+            adminDash.setDefaultCloseOperation(adminDash.EXIT_ON_CLOSE);
+            this.dispose();
+        }
+
     }//GEN-LAST:event_btnSigninActionPerformed
 
     private void viewPasswordMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_viewPasswordMouseClicked
         // TODO add your handling code here:
         password.setEchoChar((char)0);
+
     }//GEN-LAST:event_viewPasswordMouseClicked
 
     private void btnDashboard2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDashboard2ActionPerformed

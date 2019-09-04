@@ -5,6 +5,13 @@
  */
 package ui;
 
+import database.DBConnection;
+
+import javax.swing.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author Steve Karanja
@@ -223,12 +230,50 @@ public class TeacherLogin extends javax.swing.JFrame {
 
     private void btnSigninActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSigninActionPerformed
         // TODO add your handling code here:
-        TeacherDashboard trDash = new TeacherDashboard();
-        trDash.setVisible(true);
-        trDash.pack();
-        trDash.setLocationRelativeTo(null);
-        trDash.setDefaultCloseOperation(trDash.EXIT_ON_CLOSE);
-        this.dispose();
+        if (staffID.getText().isEmpty() || password.getPassword().length == 0) {
+            JOptionPane.showMessageDialog(null, "Enter both Staff ID and Password!");
+            return;
+        }
+
+        String userID = staffID.getText();
+        String pass = new String(password.getPassword());
+        String pswd = null;
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT password FROM users WHERE user_id=" + userID + " AND user_type=3 AND user_status=1;";
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                pswd = rs.getString(1);
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        if (!pass.equals(pswd)) {
+            JOptionPane.showMessageDialog(null, "Error! Check Login Credentials");
+            password.setText("");
+            return;
+        }else {
+            TeacherDashboard trDash = new TeacherDashboard();
+            trDash.setVisible(true);
+            trDash.pack();
+            trDash.setLocationRelativeTo(null);
+            trDash.setDefaultCloseOperation(trDash.EXIT_ON_CLOSE);
+            this.dispose();
+        }
+
     }//GEN-LAST:event_btnSigninActionPerformed
 
     private void viewPasswordMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_viewPasswordMouseClicked
