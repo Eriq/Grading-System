@@ -10,7 +10,13 @@ package ui;
  * @author Steve Karanja
  */
 
+import database.DBConnection;
+
 import javax.swing.JOptionPane;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class CreateUsers extends javax.swing.JFrame {
 
@@ -125,6 +131,31 @@ public class CreateUsers extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Staff ID");
+
+        int userId = 0;
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT user_id FROM users ORDER BY user_id DESC LIMIT 1;";
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                userId = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+        userId = userId + 1;
+        staffID.setEditable(false);
+        staffID.setText(new Integer(userId).toString());
 
         jLabel3.setBackground(new java.awt.Color(70, 130, 180));
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -264,11 +295,57 @@ public class CreateUsers extends javax.swing.JFrame {
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // add user to db and json file
-        
-        
-        
+        if(userName.getText().isEmpty() || password.getPassword().length == 0) {
+            JOptionPane.showMessageDialog(null, "Enter both User Name and Password");
+            return;
+        }
+
+        String name = userName.getText();
+        String pword = new String(password.getPassword());
+        String usrtype = jComboBox1.getSelectedItem().toString();
+        int type = 0;
+
+        if(usrtype.equals("Principal")){
+            type = 1;
+        }else if (usrtype.equals("Class Teacher")) {
+            type = 2;
+        }else if (usrtype.equals("Teacher")){
+            type = 3;
+        }
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String addUser = "INSERT INTO users (user_name, user_type, password) " + "VALUES" + "(?,?,?)";
+        try {
+            PreparedStatement stm = conn.prepareStatement(addUser);
+            stm.setString(1, name);
+            stm.setInt(2, type);
+            stm.setString(3, pword);
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
         //save message
-        JOptionPane.showMessageDialog(null, "User saved successfully!");
+        JOptionPane.showMessageDialog(null, "User Added Successfully!");
+
+        // take to Create Users window
+        ui.CreateUsers crtUsers = new ui.CreateUsers();
+        crtUsers.setVisible(true);
+        crtUsers.pack();
+        crtUsers.setLocationRelativeTo(null);
+        crtUsers.setDefaultCloseOperation(crtUsers.EXIT_ON_CLOSE);
+        this.dispose();
+
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void userIconMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_userIconMouseClicked

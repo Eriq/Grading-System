@@ -10,7 +10,15 @@ package ui;
  * @author Steve Karanja
  */
 
+import database.DBConnection;
+
 import javax.swing.JOptionPane;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class ManageUsers extends javax.swing.JFrame {
 
@@ -115,15 +123,80 @@ public class ManageUsers extends javax.swing.JFrame {
 
         jPanel2.setBackground(new java.awt.Color(70, 130, 180));
 
-        usersTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
 
-            },
-            new String [] {
-                "Staff ID", "Role", "Name", "Form", "Stream", "Year", "Password"
+        String query = "SELECT user_id, user_name, password, user_type FROM users WHERE user_status=1;";
+
+        Object columnNames[] = { "Staff ID", "Name", "Role", "Password"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getInt(1), rs.getString(2), userType(rs.getInt(4)), rs.getString(3)};
+                model.addRow(rowData);
             }
-        ));
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        usersTable.setModel(model);
         jScrollPane1.setViewportView(usersTable);
+
+        usersTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
+            public void valueChanged(ListSelectionEvent event) {
+                int userId = (int) usersTable.getValueAt(usersTable.getSelectedRow(), 0);
+
+                DBConnection dc = new DBConnection();
+                Connection conn = dc.getConnection();
+
+                String query = "SELECT subject_name, form, stream, year FROM users WHERE user_id="+userId+";";
+
+                Object columnNames[] = { "Subject", "Form", "Stream", "Year"};
+
+                //Object[] rowData;
+                DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+                //execute query and store data in resultset
+                try {
+                    ResultSet rs = conn.createStatement().executeQuery(query);
+                    while (rs.next()) {
+                        Object rowData[] = {rs.getString(1), rs.getInt(2), rs.getString(3), rs.getInt(4)};
+                        model.addRow(rowData);
+                    }
+                }
+                catch (SQLException ex) {
+                    JOptionPane.showMessageDialog(null, ex);
+                }
+                finally {
+                    if (conn != null) {
+                        try {
+                            conn.close();
+                        } catch (SQLException e) {
+                            JOptionPane.showMessageDialog(null, e.getMessage());
+                        }
+                    }
+                }
+
+                subjectsTable.setModel(model);
+                jScrollPane1.setViewportView(subjectsTable);
+
+            }
+        });
 
         btnChooseSubjects.setText("CHOOSE SUBJECTS");
         btnChooseSubjects.addActionListener(new java.awt.event.ActionListener() {
@@ -246,8 +319,26 @@ public class ManageUsers extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private String userType(int user_type) {
+        if (user_type == 1) {
+            return "Principal";
+        } else if (user_type == 2) {
+            return "Class Teacher";
+        }else if (user_type == 3) {
+            return "Teacher";
+        }else return "Admin";
+    }
+
     private void btnChooseSubjectsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChooseSubjectsActionPerformed
         // take to choose subjects window
+        int row = usersTable.getSelectedRow();
+        String userType = (String) usersTable.getModel().getValueAt(row, 1);
+        if (userType.equals("Admin") || userType.equals("Principal")) {
+            JOptionPane.showMessageDialog(null, "Subjects Cannot Be Set For "+userType+"s");
+            return;
+        }
+
+        ChooseSubjects.userId = (int) usersTable.getModel().getValueAt(row, 0);
         ChooseSubjects subjectselect = new ChooseSubjects();
         subjectselect.setVisible(true);
         subjectselect.pack();
@@ -265,6 +356,8 @@ public class ManageUsers extends javax.swing.JFrame {
         adminDash.setDefaultCloseOperation(adminDash.EXIT_ON_CLOSE);
         this.dispose();
     }//GEN-LAST:event_btnDashboardActionPerformed
+
+
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // save data to db and json file

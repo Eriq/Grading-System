@@ -10,7 +10,12 @@ package ui;
  * @author Steve Karanja
  */
 
+import database.DBConnection;
+
 import javax.swing.JOptionPane;
+import java.sql.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 public class CreateStudents extends javax.swing.JFrame {
 
@@ -123,6 +128,31 @@ public class CreateStudents extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Reg no:");
 
+        int studId = 0;
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT reg_no FROM students ORDER BY reg_no DESC LIMIT 1;";
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                studId = rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+        studId = studId + 1;
+        regno.setEditable(false);
+        regno.setText(new Integer(studId).toString());
+
         jLabel3.setBackground(new java.awt.Color(70, 130, 180));
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jLabel3.setForeground(new java.awt.Color(255, 255, 255));
@@ -153,7 +183,7 @@ public class CreateStudents extends javax.swing.JFrame {
         jLabel6.setText("Year");
 
         jComboBox1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Form1", "Form 2", "Form 3", "Form 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Form 1", "Form 2", "Form 3", "Form 4" }));
 
         jComboBox2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "a", "b", "c", "d" }));
@@ -303,11 +333,60 @@ public class CreateStudents extends javax.swing.JFrame {
 
     private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
         // add student to db and json file
-        
-        
-        
+        if(studName.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Enter Student's Name");
+            return;
+        }
+
+        String name, form, stream;
+        int fom = 1, year;
+        Date dob = new java.sql.Date(jDateChooser1.getDate().getTime());
+        name = studName.getText();
+        form = jComboBox1.getSelectedItem().toString();
+        stream = jComboBox2.getSelectedItem().toString();
+        year = jYearChooser1.getYear();
+
+       if (form.equals("Form 2")) {
+            fom = 2;
+        }else if (form.equals("Form 3")) {
+            fom = 3;
+        }else if (form.equals("Form 4")) {
+            fom = 4;
+        }
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String addUser = "INSERT INTO students (name, dob, form, stream, year) " + "VALUES" + "(?,?,?,?,?)";
+        try {
+            PreparedStatement stm = conn.prepareStatement(addUser);
+            stm.setString(1, name);
+            stm.setDate(2, dob);
+            stm.setInt(3, fom);
+            stm.setString(4, stream);
+            stm.setInt(5, year);
+            stm.executeUpdate();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
         //save message
-        JOptionPane.showMessageDialog(null, "Student saved successfully!");
+        JOptionPane.showMessageDialog(null, "Student Added Successfully!");
+
+        // take to create students window
+        ui.CreateStudents crtStudents = new ui.CreateStudents();
+        crtStudents.setVisible(true);
+        crtStudents.pack();
+        crtStudents.setLocationRelativeTo(null);
+        crtStudents.setDefaultCloseOperation(crtStudents.EXIT_ON_CLOSE);
+        this.dispose();
     }//GEN-LAST:event_btnSaveActionPerformed
 
     private void userLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_userLabelMouseClicked

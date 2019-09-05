@@ -10,7 +10,14 @@ package ui;
  * @author Steve Karanja
  */
 
+import database.DBConnection;
+
 import javax.swing.JOptionPane;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ChooseSubjects extends javax.swing.JFrame {
 
@@ -20,6 +27,8 @@ public class ChooseSubjects extends javax.swing.JFrame {
     
     int mouseX;
     int mouseY;
+
+    public static int userId;
     
     public ChooseSubjects() {
         initComponents();
@@ -331,7 +340,81 @@ public class ChooseSubjects extends javax.swing.JFrame {
 
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // add data to subjectsTable
-        
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        int  form, year=jYearChooser1.getYear();
+        String subject, stream=jComboBox2.getSelectedItem().toString(), fom=jComboBox1.getSelectedItem().toString();
+
+        if (fom.equals("Form 1")) {
+            form=1;
+        }else if (fom.equals("Form 2")) {
+            form=2;
+        }else if (fom.equals("Form 3")) {
+            form=3;
+        }else form=4;
+
+        List<String> subs = new ArrayList<String>();
+        if (jRadioButton1.isSelected()) {
+            subs.add(jRadioButton1.getName());
+        }
+        if (jRadioButton2.isSelected()) {
+            subs.add(jRadioButton2.getName());
+        }
+        if (jRadioButton3.isSelected()) {
+            subs.add(jRadioButton3.getName());
+        }
+        if (jRadioButton4.isSelected()) {
+            subs.add(jRadioButton4.getName());
+        }
+        if (jRadioButton5.isSelected()) {
+            subs.add(jRadioButton5.getName());
+        }
+        if (jRadioButton6.isSelected()) {
+            subs.add(jRadioButton6.getName());
+        }
+        if (jRadioButton7.isSelected()) {
+            subs.add(jRadioButton7.getName());
+        }
+        if (jRadioButton8.isSelected()) {
+            subs.add(jRadioButton8.getName());
+        }
+        if (jRadioButton9.isSelected()) {
+            subs.add(jRadioButton9.getName());
+        }
+        if (jRadioButton11.isSelected()) {
+            subs.add(jRadioButton11.getName());
+        }
+        if (jRadioButton12.isSelected()) {
+            subs.add(jRadioButton12.getName());
+        }
+        if (jRadioButton13.isSelected()) {
+            subs.add(jRadioButton13.getName());
+        }
+
+        String addUser = "INSERT INTO teacher_subjects (user_id, subject_name, form, stream, year) " + "VALUES" + "(?,?,?,?,?)";
+
+        for (String sub : subs) {
+            try {
+                PreparedStatement stm = conn.prepareStatement(addUser);
+                stm.setInt(1, userId);
+                stm.setString(2, sub);
+                stm.setInt(3, form);
+                stm.setString(4, stream);
+                stm.setInt(5, year);
+                stm.executeUpdate();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, ex);
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        JOptionPane.showMessageDialog(null, e.getMessage());
+                    }
+                }
+            }
+        }
         //save message
         JOptionPane.showMessageDialog(null, "Successfully added subjects!");
         

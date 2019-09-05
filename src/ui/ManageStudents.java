@@ -5,6 +5,15 @@
  */
 package ui;
 
+import database.DBConnection;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author Steve Karanja
@@ -117,14 +126,38 @@ public class ManageStudents extends javax.swing.JFrame {
 
         jPanel2.setBackground(new java.awt.Color(70, 130, 180));
 
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
 
-            },
-            new String [] {
-                "Reg no", "Name", "DoB", "Form", "Stream", "Year"
+        String query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1;";
+
+        Object columnNames[] = { "Reg no", "Name", "DoB", "Form", "Stream", "Year"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getInt(1), rs.getString(2), rs.getDate(3), rs.getInt(4), rs.getString(5), rs.getInt(6)};
+                model.addRow(rowData);
             }
-        ));
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        jTable1.setModel(model);
         jScrollPane1.setViewportView(jTable1);
 
         jLabel4.setBackground(new java.awt.Color(70, 130, 180));
@@ -133,7 +166,7 @@ public class ManageStudents extends javax.swing.JFrame {
         jLabel4.setText("Form");
 
         jComboBox1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Form1", "Form 2", "Form 3", "Form 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Form 1", "Form 2", "Form 3", "Form 4" }));
 
         jLabel5.setBackground(new java.awt.Color(70, 130, 180));
         jLabel5.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -150,6 +183,11 @@ public class ManageStudents extends javax.swing.JFrame {
 
         btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/search.png"))); // NOI18N
         btnSearch.setText("SEARCH");
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
 
         btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/add.png"))); // NOI18N
         btnSave.setText("SAVE");
@@ -161,6 +199,11 @@ public class ManageStudents extends javax.swing.JFrame {
 
         btnDelete.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/delete.png"))); // NOI18N
         btnDelete.setText("DELETE");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
 
         btnDashboard.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/back.png"))); // NOI18N
         btnDashboard.addActionListener(new java.awt.event.ActionListener() {
@@ -242,9 +285,106 @@ public class ManageStudents extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
-    }//GEN-LAST:event_btnSaveActionPerformed
+        String sForm, sStream;
+        int sYear, form = 1;
+        sForm = jComboBox1.getSelectedItem().toString();
+        sStream = jComboBox2.getSelectedItem().toString();
+        sYear = jYearChooser1.getYear();
+
+        if (sForm.equals("Form 2")) {
+            form = 2;
+        }else if (sForm.equals("Form 3")) {
+            form = 3;
+        }else if (sForm.equals("Form 4")) {
+            form = 4;
+        }
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND form="+form+" AND stream='"+sStream+"' AND year="+sYear+";";
+
+        Object columnNames[] = { "Reg no", "Name", "DoB", "Form", "Stream", "Year"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getInt(1), rs.getString(2), rs.getDate(3), rs.getInt(4), rs.getString(5), rs.getInt(6)};
+                model.addRow(rowData);
+            }
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+        jTable1.setModel(model);
+        jScrollPane1.setViewportView(jTable1);
+    }
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+
+    }
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {
+        // TODO add your handling code here:
+        if (jTable1.getSelectionModel().isSelectionEmpty()) {
+            JOptionPane.showMessageDialog(null, "No Student Selected");
+            return;
+        }
+
+        int row = jTable1.getSelectedRow();
+        int regDelete = (int) jTable1.getModel().getValueAt(row, 0);
+        String nameDelete = jTable1.getModel().getValueAt(row, 1).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(null,"Delete "+nameDelete+" Reg: "+regDelete+"?");
+        if (confirm == 1 || confirm == 2 || confirm == -1) {
+            return;
+        }
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+        String deleteStudent = "UPDATE students SET status=0 WHERE reg_no=?;";
+
+        try {
+            PreparedStatement stm = conn.prepareStatement(deleteStudent);
+            stm.setInt(1, regDelete);
+            stm.executeUpdate();
+
+            JOptionPane.showMessageDialog(null, "Student Successfully Deleted!");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        ui.ManageStudents mngStudents = new ui.ManageStudents();
+        mngStudents.setVisible(true);
+        mngStudents.pack();
+        mngStudents.setLocationRelativeTo(null);
+        mngStudents.setDefaultCloseOperation(mngStudents.EXIT_ON_CLOSE);
+        this.dispose();
+    }
 
     private void btnDashboardActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDashboardActionPerformed
         // take to admin dashboard window
