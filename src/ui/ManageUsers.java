@@ -17,6 +17,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -160,41 +161,45 @@ public class ManageUsers extends javax.swing.JFrame {
         usersTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
             public void valueChanged(ListSelectionEvent event) {
                 int userId = (int) usersTable.getValueAt(usersTable.getSelectedRow(), 0);
+                String userType = (String) usersTable.getValueAt(usersTable.getSelectedRow(), 2);
 
-                DBConnection dc = new DBConnection();
-                Connection conn = dc.getConnection();
-
-                String query = "SELECT subject_name, form, stream, year FROM users WHERE user_id="+userId+";";
-
-                Object columnNames[] = { "Subject", "Form", "Stream", "Year"};
-
-                //Object[] rowData;
-                DefaultTableModel model = new DefaultTableModel(columnNames, 0);
-
-                //execute query and store data in resultset
-                try {
-                    ResultSet rs = conn.createStatement().executeQuery(query);
-                    while (rs.next()) {
-                        Object rowData[] = {rs.getString(1), rs.getInt(2), rs.getString(3), rs.getInt(4)};
-                        model.addRow(rowData);
-                    }
+                if (userType.equals("Class Teacher")) {
+                    setClassTeacherView(userId);
                 }
-                catch (SQLException ex) {
-                    JOptionPane.showMessageDialog(null, ex);
-                }
-                finally {
-                    if (conn != null) {
-                        try {
-                            conn.close();
-                        } catch (SQLException e) {
-                            JOptionPane.showMessageDialog(null, e.getMessage());
+
+                else {
+                    btnChooseSubjects.setText("CHOOSE SUBJECTS");
+                    DBConnection dc = new DBConnection();
+                    Connection conn = dc.getConnection();
+
+                    String query = "SELECT subject_name, form, stream, year FROM teacher_subjects WHERE user_id="+userId+";";
+                    Object columnNames[] = { "Subject", "Form", "Stream", "Year"};
+
+                    //Object[] rowData;
+                    DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+                    //execute query and store data in resultset
+                    try {
+                        ResultSet rs = conn.createStatement().executeQuery(query);
+                        while (rs.next()) {
+                            Object rowData[] = {rs.getString(1), rs.getInt(2), rs.getString(3), rs.getInt(4)};
+                            model.addRow(rowData);
                         }
                     }
+                    catch (SQLException ex) {
+                        JOptionPane.showMessageDialog(null, ex);
+                    }
+                    finally {
+                        if (conn != null) {
+                            try {
+                                conn.close();
+                            } catch (SQLException e) {
+                                JOptionPane.showMessageDialog(null, e.getMessage());
+                            }
+                        }
+                    }
+                    subjectsTable.setModel(model);
                 }
-
-                subjectsTable.setModel(model);
-                jScrollPane1.setViewportView(subjectsTable);
-
             }
         });
 
@@ -208,12 +213,17 @@ public class ManageUsers extends javax.swing.JFrame {
         jLabel2.setBackground(new java.awt.Color(0, 250, 154));
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel2.setText("Subjects taught:");
+        jLabel2.setText("Classes/Subjects");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Principal", "Class Teacher", "Teacher" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All", "Principal", "Class Teacher", "Teacher" }));
 
         btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/search.png"))); // NOI18N
         btnSearch.setText("SEARCH");
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
 
         btnSave.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/add.png"))); // NOI18N
         btnSave.setText("SAVE");
@@ -329,11 +339,102 @@ public class ManageUsers extends javax.swing.JFrame {
         }else return "Admin";
     }
 
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {
+        String role = jComboBox1.getSelectedItem().toString();
+        int user_role = 0;
+        if (role.equals("Principal")) {
+            user_role = 1;
+        }else if (role.equals("Class Teacher")) {
+            user_role = 2;
+        }else if (role.equals("Teacher")) {
+            user_role = 3;
+        }
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT user_id, user_name, password, user_type FROM users WHERE user_status=1;";
+
+        if (user_role != 0) {
+            query = "SELECT user_id, user_name, password, user_type FROM users WHERE user_status=1 AND user_type="+user_role+";";
+        }
+
+        Object columnNames[] = { "Staff ID", "Name", "Role", "Password"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getInt(1), rs.getString(2), userType(rs.getInt(4)), rs.getString(3)};
+                model.addRow(rowData);
+            }
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        usersTable.setModel(model);
+        jScrollPane1.setViewportView(usersTable);
+    }
+
+    private void setClassTeacherView (int userId) {
+        btnChooseSubjects.setText("CHOOSE CLASSES");
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT form, stream, year FROM class_teachers WHERE user_id="+userId+";";
+        Object columnNames[] = { "Form", "Stream", "Year"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getInt(1), rs.getString(2), rs.getInt(3)};
+                model.addRow(rowData);
+            }
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        subjectsTable.setModel(model);
+    }
+
     private void btnChooseSubjectsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChooseSubjectsActionPerformed
         // take to choose subjects window
+        if (usersTable.getSelectionModel().isSelectionEmpty()) {
+            JOptionPane.showMessageDialog(null, "No User Selected");
+            return;
+        }
+
         int row = usersTable.getSelectedRow();
-        String userType = (String) usersTable.getModel().getValueAt(row, 1);
-        if (userType.equals("Admin") || userType.equals("Principal")) {
+        String userType = (String) usersTable.getModel().getValueAt(row, 2);
+        if (!userType.equals("Teacher")) {
             JOptionPane.showMessageDialog(null, "Subjects Cannot Be Set For "+userType+"s");
             return;
         }
@@ -388,10 +489,51 @@ public class ManageUsers extends javax.swing.JFrame {
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // delete user data from db and json file
-        
-        
-        //delete message
-        JOptionPane.showMessageDialog(null, "Deleted successfully!");
+        if (usersTable.getSelectionModel().isSelectionEmpty()) {
+            JOptionPane.showMessageDialog(null, "No User Selected");
+            return;
+        }
+
+        int row = usersTable.getSelectedRow();
+        int idDelete = (int) usersTable.getModel().getValueAt(row, 0);
+        String nameDelete = usersTable.getModel().getValueAt(row, 1).toString();
+        String roleDelete = usersTable.getModel().getValueAt(row, 2).toString();
+
+        int confirm = JOptionPane.showConfirmDialog(null,"Delete "+roleDelete+" "+nameDelete+" ID: "+idDelete+"?");
+        if (confirm == 1 || confirm == 2 || confirm == -1) {
+            return;
+        }
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+        String deleteStudent = "UPDATE users SET status=0 WHERE user_id=?;";
+
+        try {
+            PreparedStatement stm = conn.prepareStatement(deleteStudent);
+            stm.setInt(1, idDelete);
+            stm.executeUpdate();
+
+            JOptionPane.showMessageDialog(null, "User Deleted Successfully!");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        // take to manage users window
+        ui.ManageUsers mngUsers = new ui.ManageUsers();
+        mngUsers.setVisible(true);
+        mngUsers.pack();
+        mngUsers.setLocationRelativeTo(null);
+        mngUsers.setDefaultCloseOperation(mngUsers.EXIT_ON_CLOSE);
+        this.dispose();
+
     }//GEN-LAST:event_btnDeleteActionPerformed
 
     private void userLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_userLabelMouseClicked

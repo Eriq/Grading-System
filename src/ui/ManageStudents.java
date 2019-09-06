@@ -129,7 +129,7 @@ public class ManageStudents extends javax.swing.JFrame {
         DBConnection dc = new DBConnection();
         Connection conn = dc.getConnection();
 
-        String query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1;";
+        String query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 ORDER BY reg_no ASC;;";
 
         Object columnNames[] = { "Reg no", "Name", "DoB", "Form", "Stream", "Year"};
 
@@ -174,7 +174,7 @@ public class ManageStudents extends javax.swing.JFrame {
         jLabel5.setText("Stream");
 
         jComboBox2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "a", "b", "c", "d" }));
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All", "A", "B", "C", "D" }));
 
         jLabel6.setBackground(new java.awt.Color(70, 130, 180));
         jLabel6.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -304,7 +304,11 @@ public class ManageStudents extends javax.swing.JFrame {
         DBConnection dc = new DBConnection();
         Connection conn = dc.getConnection();
 
-        String query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND form="+form+" AND stream='"+sStream+"' AND year="+sYear+";";
+        String query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND form="+form+" AND year="+sYear+" ORDER BY reg_no ASC;";
+
+        if (!sStream.equals("All")) {
+            query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND form="+form+" AND stream='"+sStream+"' AND year="+sYear+" ORDER BY reg_no ASC;";
+        }
 
         Object columnNames[] = { "Reg no", "Name", "DoB", "Form", "Stream", "Year"};
 
@@ -365,7 +369,7 @@ public class ManageStudents extends javax.swing.JFrame {
             stm.setInt(1, regDelete);
             stm.executeUpdate();
 
-            JOptionPane.showMessageDialog(null, "Student Successfully Deleted!");
+            JOptionPane.showMessageDialog(null, "Student Deleted Successfully!");
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, e);
         } finally {

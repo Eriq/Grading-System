@@ -150,7 +150,7 @@ public class ChooseSubjects extends javax.swing.JFrame {
 
         jComboBox2.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Form 1", "Form 2", "Form 3", "Form 4" }));
 
-        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "a", "b", "c", "d" }));
+        jComboBox3.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "A", "B", "C", "D" }));
 
         jRadioButton1.setBackground(new java.awt.Color(70, 130, 180));
         jRadioButton1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
@@ -344,7 +344,7 @@ public class ChooseSubjects extends javax.swing.JFrame {
         Connection conn = dc.getConnection();
 
         int  form, year=jYearChooser1.getYear();
-        String subject, stream=jComboBox2.getSelectedItem().toString(), fom=jComboBox1.getSelectedItem().toString();
+        String subject, stream=jComboBox3.getSelectedItem().toString(), fom=jComboBox2.getSelectedItem().toString();
 
         if (fom.equals("Form 1")) {
             form=1;
@@ -356,46 +356,51 @@ public class ChooseSubjects extends javax.swing.JFrame {
 
         List<String> subs = new ArrayList<String>();
         if (jRadioButton1.isSelected()) {
-            subs.add(jRadioButton1.getName());
+            subs.add(jRadioButton1.getText());
         }
         if (jRadioButton2.isSelected()) {
-            subs.add(jRadioButton2.getName());
+            subs.add(jRadioButton2.getText());
         }
         if (jRadioButton3.isSelected()) {
-            subs.add(jRadioButton3.getName());
+            subs.add(jRadioButton3.getText());
         }
         if (jRadioButton4.isSelected()) {
-            subs.add(jRadioButton4.getName());
+            subs.add(jRadioButton4.getText());
         }
         if (jRadioButton5.isSelected()) {
-            subs.add(jRadioButton5.getName());
+            subs.add(jRadioButton5.getText());
         }
         if (jRadioButton6.isSelected()) {
-            subs.add(jRadioButton6.getName());
+            subs.add(jRadioButton6.getText());
         }
         if (jRadioButton7.isSelected()) {
-            subs.add(jRadioButton7.getName());
+            subs.add(jRadioButton7.getText());
         }
         if (jRadioButton8.isSelected()) {
-            subs.add(jRadioButton8.getName());
+            subs.add(jRadioButton8.getText());
         }
         if (jRadioButton9.isSelected()) {
-            subs.add(jRadioButton9.getName());
+            subs.add(jRadioButton9.getText());
         }
         if (jRadioButton11.isSelected()) {
-            subs.add(jRadioButton11.getName());
+            subs.add(jRadioButton11.getText());
         }
         if (jRadioButton12.isSelected()) {
-            subs.add(jRadioButton12.getName());
+            subs.add(jRadioButton12.getText());
         }
         if (jRadioButton13.isSelected()) {
-            subs.add(jRadioButton13.getName());
+            subs.add(jRadioButton13.getText());
+        }
+
+        if (subs.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No Subject Selected!");
+            return;
         }
 
         String addUser = "INSERT INTO teacher_subjects (user_id, subject_name, form, stream, year) " + "VALUES" + "(?,?,?,?,?)";
 
-        for (String sub : subs) {
-            try {
+        try {
+            for (String sub : subs) {
                 PreparedStatement stm = conn.prepareStatement(addUser);
                 stm.setInt(1, userId);
                 stm.setString(2, sub);
@@ -403,21 +408,30 @@ public class ChooseSubjects extends javax.swing.JFrame {
                 stm.setString(4, stream);
                 stm.setInt(5, year);
                 stm.executeUpdate();
-            } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, ex);
-            } finally {
-                if (conn != null) {
-                    try {
-                        conn.close();
-                    } catch (SQLException e) {
-                        JOptionPane.showMessageDialog(null, e.getMessage());
-                    }
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
                 }
             }
         }
         //save message
-        JOptionPane.showMessageDialog(null, "Successfully added subjects!");
-        
+        JOptionPane.showMessageDialog(null, "Subjects Added Successfully!");
+        ChooseSubjects subjectselect = new ChooseSubjects();
+        subjectselect.setVisible(true);
+        subjectselect.pack();
+        subjectselect.setLocationRelativeTo(null);
+        subjectselect.setDefaultCloseOperation(subjectselect.EXIT_ON_CLOSE);
+        this.dispose();
+
+    }//GEN-LAST:event_btnAddActionPerformed
+
+    private void closeLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeLabelMouseClicked
         // take to manage users window
         ui.ManageUsers mngUsers = new ui.ManageUsers();
         mngUsers.setVisible(true);
@@ -425,11 +439,6 @@ public class ChooseSubjects extends javax.swing.JFrame {
         mngUsers.setLocationRelativeTo(null);
         mngUsers.setDefaultCloseOperation(mngUsers.EXIT_ON_CLOSE);
         this.dispose();
-    }//GEN-LAST:event_btnAddActionPerformed
-
-    private void closeLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeLabelMouseClicked
-        // close application
-        System.exit(0);
     }//GEN-LAST:event_closeLabelMouseClicked
 
     private void formMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMouseDragged
