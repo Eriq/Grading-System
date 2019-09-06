@@ -29,6 +29,7 @@ public class ChooseSubjects extends javax.swing.JFrame {
     int mouseY;
 
     public static int userId;
+    public static String userType="Teacher";
     
     public ChooseSubjects() {
         initComponents();
@@ -87,7 +88,12 @@ public class ChooseSubjects extends javax.swing.JFrame {
         jLabel1.setBackground(new java.awt.Color(0, 250, 154));
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Subject Selection");
+        if (userType.equals("Class Teacher")) {
+            jLabel1.setText("Class Selection");
+        } else {
+            jLabel1.setText("Subject Selection");
+        }
+
 
         userLabel.setBackground(new java.awt.Color(0, 250, 154));
         userLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/Misc-User-icon.png"))); // NOI18N
@@ -214,6 +220,7 @@ public class ChooseSubjects extends javax.swing.JFrame {
 
         jComboBox1.setFont(new java.awt.Font("Tahoma", 0, 12)); // NOI18N
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "French", "German" }));
+        jComboBox1.setEnabled(false);
 
         btnAdd.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/add.png"))); // NOI18N
         btnAdd.setText("ADD");
@@ -392,36 +399,64 @@ public class ChooseSubjects extends javax.swing.JFrame {
             subs.add(jRadioButton13.getText());
         }
 
-        if (subs.isEmpty()) {
+        if (userType.equals("Teacher") && subs.isEmpty()) {
             JOptionPane.showMessageDialog(null, "No Subject Selected!");
             return;
         }
 
-        String addUser = "INSERT INTO teacher_subjects (user_id, subject_name, form, stream, year) " + "VALUES" + "(?,?,?,?,?)";
+        if (userType.equals("Class Teacher")) {
+            String addUser = "INSERT INTO class_teachers (user_id, form, stream, year) " + "VALUES" + "(?,?,?,?)";
 
-        try {
-            for (String sub : subs) {
+            try {
                 PreparedStatement stm = conn.prepareStatement(addUser);
                 stm.setInt(1, userId);
-                stm.setString(2, sub);
-                stm.setInt(3, form);
-                stm.setString(4, stream);
-                stm.setInt(5, year);
+                stm.setInt(2, form);
+                stm.setString(3, stream);
+                stm.setInt(4, year);
                 stm.executeUpdate();
-            }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, ex);
-        } finally {
-            if (conn != null) {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    JOptionPane.showMessageDialog(null, e.getMessage());
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, ex);
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        JOptionPane.showMessageDialog(null, e.getMessage());
+                    }
                 }
             }
+            //save message
+            JOptionPane.showMessageDialog(null, "Class Added Successfully!");
         }
-        //save message
-        JOptionPane.showMessageDialog(null, "Subjects Added Successfully!");
+
+        else {
+            String addUser = "INSERT INTO teacher_subjects (user_id, subject_name, form, stream, year) " + "VALUES" + "(?,?,?,?,?)";
+
+            try {
+                for (String sub : subs) {
+                    PreparedStatement stm = conn.prepareStatement(addUser);
+                    stm.setInt(1, userId);
+                    stm.setString(2, sub);
+                    stm.setInt(3, form);
+                    stm.setString(4, stream);
+                    stm.setInt(5, year);
+                    stm.executeUpdate();
+                }
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, ex);
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException e) {
+                        JOptionPane.showMessageDialog(null, e.getMessage());
+                    }
+                }
+            }
+            //save message
+            JOptionPane.showMessageDialog(null, "Subjects Added Successfully!");
+        }
+
         ChooseSubjects subjectselect = new ChooseSubjects();
         subjectselect.setVisible(true);
         subjectselect.pack();

@@ -19,9 +19,9 @@ CREATE TABLE teacher_subjects (
 CREATE TABLE class_teachers (
 	id SERIAL PRIMARY KEY,
 	user_id integer NOT NULL,
-	form int NOT NULL,
-	stream int NOT NULL,
-	year varchar(4) NOT NULL,
+	form integer NOT NULL,
+	stream varchar(1) NOT NULL,
+	year integer NOT NULL,
 	FOREIGN KEY (user_id) REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
