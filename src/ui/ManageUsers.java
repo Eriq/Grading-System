@@ -158,11 +158,7 @@ public class ManageUsers extends javax.swing.JFrame {
         usersTable.setModel(model);
         jScrollPane1.setViewportView(usersTable);
 
-        usersTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-            public void valueChanged(ListSelectionEvent event) {
-                tableRowsSelected(event);
-            }
-        });
+        usersTable.getSelectionModel().addListSelectionListener(listener);
 
         btnChooseSubjects.setText("SUBJECTS");
         btnChooseSubjects.addActionListener(new java.awt.event.ActionListener() {
@@ -300,6 +296,14 @@ public class ManageUsers extends javax.swing.JFrame {
         }else return "Admin";
     }
 
+    //Create Row Selection listener for the jtable
+    private ListSelectionListener listener = new ListSelectionListener() {
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            tableRowsSelected(e);
+        }
+    };
+
     private void tableRowsSelected(ListSelectionEvent event) {
         int userId = (int) usersTable.getValueAt(usersTable.getSelectedRow(), 0);
         String userType = (String) usersTable.getValueAt(usersTable.getSelectedRow(), 2);
@@ -362,6 +366,9 @@ public class ManageUsers extends javax.swing.JFrame {
             user_role = 3;
         }
 
+        //remove row selection listener
+        usersTable.getSelectionModel().removeListSelectionListener(listener);
+
         DBConnection dc = new DBConnection();
         Connection conn = dc.getConnection();
 
@@ -400,11 +407,12 @@ public class ManageUsers extends javax.swing.JFrame {
         usersTable.setModel(model);
         jScrollPane1.setViewportView(usersTable);
 
-        usersTable.getSelectionModel().addListSelectionListener(new ListSelectionListener(){
-            public void valueChanged(ListSelectionEvent event) {
-                tableRowsSelected(event);
-            }
-        });
+        //clear Subjects table
+        jLabel2.setText("");
+        btnChooseSubjects.setEnabled(false);
+        subjectsTable.setModel(new DefaultTableModel());
+
+        usersTable.getSelectionModel().addListSelectionListener(listener);
     }
 
     private void setClassTeacherView (int userId) {
