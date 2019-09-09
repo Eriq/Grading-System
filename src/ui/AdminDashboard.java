@@ -59,7 +59,7 @@ public class AdminDashboard extends javax.swing.JFrame {
         jLabel1.setBackground(new java.awt.Color(0, 250, 154));
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 24)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("DASHBOARD");
+        jLabel1.setText("ADMIN DASHBOARD");
 
         userLabel.setBackground(new java.awt.Color(0, 250, 154));
         userLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/Misc-User-icon.png"))); // NOI18N
