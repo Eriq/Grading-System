@@ -531,7 +531,7 @@ public class ManageUsers extends javax.swing.JFrame {
 
         DBConnection dc = new DBConnection();
         Connection conn = dc.getConnection();
-        String deleteStudent = "UPDATE users SET status=0 WHERE user_id=?;";
+        String deleteStudent = "UPDATE users SET user_status=0 WHERE user_id=?;";
 
         try {
             PreparedStatement stm = conn.prepareStatement(deleteStudent);

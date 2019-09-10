@@ -60,7 +60,4 @@ CREATE TABLE exams (
 );
 
 INSERT INTO users (user_name, password, user_type) VALUES
-('admin', '123', 0),
-('John', '123', 1),
-('Jane', '123', 2),
-('Teacher', '123', 3);
+('admin', '123', 0);
