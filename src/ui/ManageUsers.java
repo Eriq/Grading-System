@@ -524,6 +524,11 @@ public class ManageUsers extends javax.swing.JFrame {
         String nameDelete = usersTable.getModel().getValueAt(row, 1).toString();
         String roleDelete = usersTable.getModel().getValueAt(row, 2).toString();
 
+        if (idDelete==1) {
+            JOptionPane.showMessageDialog(null, "Cannot Delete Admin");
+            return;
+        }
+
         int confirm = JOptionPane.showConfirmDialog(null,"Delete "+roleDelete+" "+nameDelete+" ID: "+idDelete+"?");
         if (confirm == 1 || confirm == 2 || confirm == -1) {
             return;

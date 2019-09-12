@@ -166,7 +166,7 @@ public class ManageStudents extends javax.swing.JFrame {
         jLabel4.setText("Form");
 
         jComboBox1.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Form 1", "Form 2", "Form 3", "Form 4" }));
+        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All", "Form 1", "Form 2", "Form 3", "Form 4" }));
 
         jLabel5.setBackground(new java.awt.Color(70, 130, 180));
         jLabel5.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
@@ -288,12 +288,14 @@ public class ManageStudents extends javax.swing.JFrame {
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {
         // TODO add your handling code here:
         String sForm, sStream;
-        int sYear, form = 1;
+        int sYear, form = 0;
         sForm = jComboBox1.getSelectedItem().toString();
         sStream = jComboBox2.getSelectedItem().toString();
         sYear = jYearChooser1.getYear();
 
-        if (sForm.equals("Form 2")) {
+        if (sForm.equals("Form 1")){
+            form = 1 ;
+        }else if (sForm.equals("Form 2")) {
             form = 2;
         }else if (sForm.equals("Form 3")) {
             form = 3;
@@ -304,11 +306,21 @@ public class ManageStudents extends javax.swing.JFrame {
         DBConnection dc = new DBConnection();
         Connection conn = dc.getConnection();
 
-        String query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND form="+form+" AND year="+sYear+" ORDER BY reg_no ASC;";
+        String query;
 
-        if (!sStream.equals("All")) {
+        if (sStream.equals("All") && form != 0) {
+            query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND form="+form+" AND year="+sYear+" ORDER BY reg_no ASC;";
+        }
+        else if (!sStream.equals("All") && form == 0) {
+            query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND stream='"+sStream+"' AND year="+sYear+" ORDER BY reg_no ASC;";
+        }
+        else if (!sStream.equals("All") && form != 0) {
             query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND form="+form+" AND stream='"+sStream+"' AND year="+sYear+" ORDER BY reg_no ASC;";
         }
+        else {
+            query = "SELECT reg_no, name, dob, form, stream, year FROM students WHERE status=1 AND year="+sYear+" ORDER BY reg_no ASC;";
+        }
+
 
         Object columnNames[] = { "Reg no", "Name", "DoB", "Form", "Stream", "Year"};
 
