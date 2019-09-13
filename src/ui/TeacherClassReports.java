@@ -5,6 +5,15 @@
  */
 package ui;
 
+import database.DBConnection;
+import studentgrades.StudentGrades;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author Steve Karanja
@@ -128,7 +137,7 @@ public class TeacherClassReports extends javax.swing.JFrame {
             }
         });
 
-        streamSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "a", "b", "c", "d" }));
+        streamSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "A", "B", "C", "D" }));
         streamSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 streamSelectorActionPerformed(evt);
@@ -144,15 +153,49 @@ public class TeacherClassReports extends javax.swing.JFrame {
 
         btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/search.png"))); // NOI18N
         btnSearch.setText("SEARCH");
-
-        jTable2.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "Regno", "Name", "Marks", "Grade"
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
             }
-        ));
+        });
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT t1.reg_no, t1.name, t2.opener, t2.midterm, t2.endterm  FROM students t1 LEFT JOIN exams t2 ON " +
+                "t1.reg_no = t2.reg_no WHERE t1.stream='A' AND t2.subject=1 AND t2.form=1 AND t2.term=1 AND t2.year=2019;";
+
+        Object columnNames[] = { "Reg No", "Name", "Opener", "Mid-Term", "End-Term", "Average", "Grade"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        int average; String grade;
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                average = StudentGrades.getAverage(rs.getInt(3), rs.getInt(4), rs.getInt(5));
+                grade = StudentGrades.getGrade(average);
+
+                Object rowData[] = {rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), average, grade};
+                model.addRow(rowData);
+            }
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        jTable2.setModel(model);
         jScrollPane2.setViewportView(jTable2);
 
         jButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/download.png"))); // NOI18N
@@ -261,6 +304,53 @@ public class TeacherClassReports extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        // TODO add your handling code here:
+        int sub, sForm, sTerm;
+        String sStream = streamSelector.getSelectedItem().toString();
+        sub = StudentGrades.getSubjectCode(subjectSelector.getSelectedItem().toString());
+        sForm = StudentGrades.getFormCode(formSelector.getSelectedItem().toString());
+        sTerm = StudentGrades.getTermCode(termSelector.getSelectedItem().toString());
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT t1.reg_no, t1.name, t2.opener, t2.midterm, t2.endterm  FROM students t1 LEFT JOIN exams t2 ON " +
+                "t1.reg_no = t2.reg_no WHERE t1.stream="+streamSelector.getSelectedItem().toString()+" AND t2.subject="+sub+" AND t2.form="+sForm+" AND t2.term="+sTerm+" AND t2.year=2019;";
+
+        Object columnNames[] = { "Reg No", "Name", "Opener", "Mid-Term", "End-Term", "Average", "Grade"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+        int average; String grade;
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                average = StudentGrades.getAverage(rs.getInt(3), rs.getInt(4), rs.getInt(5));
+                grade = StudentGrades.getGrade(average);
+
+                Object rowData[] = {rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), average, grade};
+                model.addRow(rowData);
+            }
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+        jTable2.setModel(model);
+        jScrollPane2.setViewportView(jTable2);
+    }
 
     private void closeLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeLabelMouseClicked
         // close application
