@@ -64,6 +64,17 @@ public class StudentGrades {
         }
     }
 
+    public static String getExam(String exam) {
+        if (exam.equals("Opening Exam")) {
+            return "opener";
+        } else if (exam.equals("Midterm Exam")) {
+            return "midterm";
+        } else if (exam.equals("Endterm Exam")) {
+            return "endterm";
+        } else
+            return "Average";
+    }
+
     public static int getAverage(int opener, int midterm, int endterm) {
         double average = (0.2*opener) + (0.3*midterm) + (0.5*endterm);
         return (int)Math.round(average);
@@ -81,6 +92,18 @@ public class StudentGrades {
         } else {
             return "A";
         }
+    }
+
+    public static String getStream (String stream) {
+        if (stream.equals("a")) {
+            return "A";
+        } else if (stream.equals("b")) {
+            return "B";
+        } else if (stream.equals("c")) {
+            return "C";
+        } else if (stream.equals("d")) {
+            return "D";
+        } else return "ALL";
     }
 
     public static void main(String[] args) {

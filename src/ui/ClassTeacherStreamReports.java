@@ -130,7 +130,7 @@ public class ClassTeacherStreamReports extends javax.swing.JFrame {
             }
         });
 
-        streamSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "a", "b", "c", "d" }));
+        streamSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "A", "B", "C", "D" }));
         streamSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 streamSelectorActionPerformed(evt);
@@ -152,7 +152,7 @@ public class ClassTeacherStreamReports extends javax.swing.JFrame {
             }
         });
 
-        examSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Opening Exam", "CAT 1", "Midterm Exam", "CAT 2", "Closing Exam", "TERM AVERAGE" }));
+        examSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Opening Exam", "Midterm Exam", "Closing Exam", "TERM AVERAGE" }));
         examSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 examSelectorActionPerformed(evt);
@@ -164,7 +164,7 @@ public class ClassTeacherStreamReports extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Regno", "Name", "Marks", "Grade"
+                "Rank", "Name", "Regno", "Maths", "English", "Kiswahili", "Chemistry", "Physics", "Biology", "History", "Geography", "R.E", "Computer Studies", "Business", "Agriculture", "French", "German", "Total"
             }
         ));
         jScrollPane2.setViewportView(streamReportTable);

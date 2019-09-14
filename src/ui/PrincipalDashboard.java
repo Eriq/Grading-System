@@ -5,6 +5,15 @@
  */
 package ui;
 
+import database.DBConnection;
+import studentgrades.StudentGrades;
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 /**
  *
  * @author Steve Karanja
@@ -122,14 +131,39 @@ public class PrincipalDashboard extends javax.swing.JFrame {
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("My classes:");
 
-        studentMarksTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
 
-            },
-            new String [] {
-                "Regno", "Name", "Opening Exam", "CAT 1", "MidTerm Exam", "CAT 2", "Closing Exam"
+        String query = "SELECT t1.reg_no, t1.name, t2.opener, t2.midterm, t2.endterm  FROM students t1 LEFT JOIN exams t2 ON " +
+                "t1.reg_no = t2.reg_no WHERE t1.stream='A' AND t2.subject=1 AND t2.form=1 AND t2.term=1 AND t2.year=2019;";
+
+        Object columnNames[] = { "Reg No", "Name", "Opening Exam", "Mid-Term Exam", "End-Term Exam"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5),};
+                model.addRow(rowData);
             }
-        ));
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+
+        studentMarksTable.setModel(model);
         jScrollPane1.setViewportView(studentMarksTable);
 
         formSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Form 1", "Form 2", "Form 3", "Form 4" }));
@@ -148,8 +182,13 @@ public class PrincipalDashboard extends javax.swing.JFrame {
 
         btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/schoolgrades/search.png"))); // NOI18N
         btnSearch.setText("SEARCH");
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
 
-        streamSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "a", "b", "c", "d" }));
+        streamSelector.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "A", "B", "C", "D" }));
         streamSelector.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 streamSelectorActionPerformed(evt);
@@ -273,6 +312,51 @@ public class PrincipalDashboard extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        // TODO add your handling code here:
+
+        int sub, sForm , sTerm;
+        String sStream = streamSelector.getSelectedItem().toString();
+        sub = StudentGrades.getSubjectCode(subjectSelector.getSelectedItem().toString());
+        sForm = StudentGrades.getFormCode(formSelector.getSelectedItem().toString());
+        sTerm = StudentGrades.getTermCode(termSelector.getSelectedItem().toString());
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT t1.reg_no, t1.name, t2.opener, t2.midterm, t2.endterm  FROM students t1 LEFT JOIN exams t2 ON " +
+                "t1.reg_no = t2.reg_no WHERE t1.stream='"+sStream+"' AND t2.subject="+sub+" AND t2.form="+sForm+" AND t2.term="+sTerm+" AND t2.year=2019;";
+
+        Object columnNames[] = { "Reg No", "Name", "Opening Exam", "Mid-Term Exam", "End-Term Exam"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getInt(1), rs.getString(2), rs.getInt(3), rs.getInt(4), rs.getInt(5),};
+                model.addRow(rowData);
+            }
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+        studentMarksTable.setModel(model);
+        jScrollPane1.setViewportView(studentMarksTable);
+
+    }//GEN-LAST:event_btnSearchActionPerformed
 
     private void formSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formSelectorActionPerformed
         // TODO add your handling code here:

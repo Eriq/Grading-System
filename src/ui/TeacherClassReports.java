@@ -317,9 +317,9 @@ public class TeacherClassReports extends javax.swing.JFrame {
         Connection conn = dc.getConnection();
 
         String query = "SELECT t1.reg_no, t1.name, t2.opener, t2.midterm, t2.endterm  FROM students t1 LEFT JOIN exams t2 ON " +
-                "t1.reg_no = t2.reg_no WHERE t1.stream="+streamSelector.getSelectedItem().toString()+" AND t2.subject="+sub+" AND t2.form="+sForm+" AND t2.term="+sTerm+" AND t2.year=2019;";
+                "t1.reg_no = t2.reg_no WHERE t1.stream='"+sStream+"' AND t2.subject="+sub+" AND t2.form="+sForm+" AND t2.term="+sTerm+" AND t2.year=2019;";
 
-        Object columnNames[] = { "Reg No", "Name", "Opener", "Mid-Term", "End-Term", "Average", "Grade"};
+        Object columnNames[] = { "Reg No", "Name", "Opening", "Mid-Term", "End-Term", "Average", "Grade"};
 
         //Object[] rowData;
         DefaultTableModel model = new DefaultTableModel(columnNames, 0);
