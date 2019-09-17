@@ -175,7 +175,7 @@ public class ClassTeacherStreamReports extends javax.swing.JFrame {
                 "'SELECT reg_no, subject, opener FROM exams WHERE term=1 AND year=2019 ORDER BY reg_no'," +
                 "'SELECT DISTINCT subject FROM exams ORDER BY 1')" +
                 "AS ct (\"reg_no\" int, \"Maths\" int, \"English\" int, \"Kiswahili\" int, \"Chemistry\" int, \"Physics\" int, \"Biology\" int, \"History\" int,\"Geography\" int, \"RE\" int, \"Computer\" int, \"Business\" int, \"Agriculture\" int, \"French\" int, \"German\" int)" +
-                "ON t1.reg_no = ct.reg_no WHERE t1.stream = 'A';";
+                "ON t1.reg_no = ct.reg_no WHERE t1.stream = 'A' AND t1.form=1 AND year=2019;";
 
         Object columnNames[] = {"Name", "Regno", "Maths", "English", "Kiswahili", "Chemistry", "Physics", "Biology", "History", "Geography", "R.E", "Computer Studies", "Business", "Agriculture", "French", "German"};
 
@@ -340,6 +340,58 @@ public class ClassTeacherStreamReports extends javax.swing.JFrame {
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
         // TODO add your handling code here:
+        int form, term;
+        String stream = streamSelector.getSelectedItem().toString();
+        form = StudentGrades.getFormCode(formSelector.getSelectedItem().toString());
+        term = StudentGrades.getTermCode(termSelector.getSelectedItem().toString());
+        String exam = StudentGrades.getExam(examSelector.getSelectedItem().toString());
+
+        DBConnection dc = new DBConnection();
+        Connection conn = dc.getConnection();
+
+        String query = "SELECT t1.name, ct.* FROM students t1 " +
+                "LEFT JOIN crosstab(" +
+                "'SELECT reg_no, subject, "+exam+" FROM exams WHERE term="+term+" AND form="+form+" AND year=2019 ORDER BY reg_no'," +
+                "'SELECT DISTINCT subject FROM exams ORDER BY 1')" +
+                "AS ct (\"reg_no\" int, \"Maths\" int, \"English\" int, \"Kiswahili\" int, \"Chemistry\" int, \"Physics\" int, \"Biology\" int, \"History\" int,\"Geography\" int, \"RE\" int, \"Computer\" int, \"Business\" int, \"Agriculture\" int, \"French\" int, \"German\" int)" +
+                "ON t1.reg_no = ct.reg_no WHERE t1.stream = '"+stream+"'AND t1.form="+form+" AND year=2019;";
+
+        if (stream.equals("ALL")) {
+            query = "SELECT t1.name, ct.* FROM students t1 " +
+                    "LEFT JOIN crosstab(" +
+                    "'SELECT reg_no, subject, "+exam+" FROM exams WHERE term="+term+" AND form="+form+" AND year=2019 ORDER BY reg_no'," +
+                    "'SELECT DISTINCT subject FROM exams ORDER BY 1')" +
+                    "AS ct (\"reg_no\" int, \"Maths\" int, \"English\" int, \"Kiswahili\" int, \"Chemistry\" int, \"Physics\" int, \"Biology\" int, \"History\" int,\"Geography\" int, \"RE\" int, \"Computer\" int, \"Business\" int, \"Agriculture\" int, \"French\" int, \"German\" int)" +
+                    "ON t1.reg_no = ct.reg_no WHERE t1.form="+form+" AND year=2019;";
+        }
+
+        Object columnNames[] = {"Name", "Regno", "Maths", "English", "Kiswahili", "Chemistry", "Physics", "Biology", "History", "Geography", "R.E", "Computer Studies", "Business", "Agriculture", "French", "German"};
+
+        //Object[] rowData;
+        DefaultTableModel model = new DefaultTableModel(columnNames, 0);
+
+        //execute query and store data in resultset
+        try {
+            ResultSet rs = conn.createStatement().executeQuery(query);
+            while (rs.next()) {
+                Object rowData[] = {rs.getString(1), rs.getInt(2), rs.getInt(3), rs.getInt(4), rs.getInt(5), rs.getInt(6), rs.getInt(7), rs.getInt(8), rs.getInt(9), rs.getInt(10), rs.getInt(11), rs.getInt(12), rs.getInt(13), rs.getInt(14), rs.getInt(15), rs.getInt(16)};
+                model.addRow(rowData);
+            }
+        }
+        catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, ex);
+        }
+        finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    JOptionPane.showMessageDialog(null, e.getMessage());
+                }
+            }
+        }
+        streamReportTable.setModel(model);
+        jScrollPane2.setViewportView(streamReportTable);
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void examSelectorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_examSelectorActionPerformed
